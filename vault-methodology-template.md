@@ -147,20 +147,20 @@ Pour éviter la saturation du contexte et réduire les coûts (~40% de tokens é
 ### Fichiers `wiki/`
 - **Format** : `kebab-case`, descriptif, sans abréviations, sans caractères spéciaux
 - **Exemples** :
-  - `wiki/concepts/incremental-load-strategy.md`
-  - `wiki/entities/dbt-labs.md`
-  - `wiki/patterns/surrogate-key-macro.md`
-  - `wiki/sources/ultimate-dbt-guide.md`
-  - `wiki/syntheses/optimisation-query-bigquery.md`
+  - `wiki/concepts/feedback-loop-model.md`
+  - `wiki/entities/nom-outil-ou-personne.md`
+  - `wiki/patterns/template-prise-de-decision.md`
+  - `wiki/sources/nom-du-livre-ou-article.md`
+  - `wiki/syntheses/synthese-sur-sujet-cle.md`
 
 ### Fichiers `raw/`
 - **Format** : `YYYY-MM-DD_source-description.md` — date ISO + tiret bas + description kebab-case
 - **Règle** : la date est celle de récupération de la source, pas de publication
 - **Exemples** :
-  - `raw/2026-05-21_ultimate-dbt-guide.md`
-  - `raw/2026-05-15_meeting-notes.md`
-  - `raw/2026-04-10_youtube-dbt-incremental-models.md`
-  - `raw/2026-03-22_article-metabase-intermediate-questions.md`
+  - `raw/2026-05-21_nom-livre-reference.md`
+  - `raw/2026-05-15_notes-reunion-projet.md`
+  - `raw/2026-04-10_youtube-titre-video.md`
+  - `raw/2026-03-22_article-sujet-cle.md`
 
 ### Fichiers `daily/`
 - **Format** : `YYYY-MM-DD.md`
@@ -473,14 +473,14 @@ Créer un **nouveau vault séparé** si :
 
 | Critère | Seuil |
 |---------|-------|
-| **Domaine** | Les sujets ne partagent aucun concept (ex: analytics engineering ≠ photographie) |
+| **Domaine** | Les sujets ne partagent aucun concept (ex: finance d'entreprise ≠ photographie) |
 | **Audience** | Les notes s'adressent à des contextes de vie distincts (pro vs perso) |
 | **Tags** | Les deux univers n'ont aucun tag commun |
 | **Taille** | Le vault dépasse 200 pages et une moitié ne cite jamais l'autre |
 | **Agents** | Les sous-agents auraient besoin de contextes radicalement différents |
 
 Conserver dans **le même vault** si :
-- Les sujets partagent des concepts (ex: SQL + dbt + BigQuery = même vault)
+- Les sujets partagent des concepts (ex: stratégie + négociation + gestion de projet = même vault)
 - Les projets citent les mêmes patterns ou lessons
 - Les tags se recoupent naturellement
 
@@ -534,7 +534,7 @@ C'est le premier fichier que tu crées : `context/ligne-rouge.md`. Tout le reste
 | **Comptable / Financier** | Aucune approximation sur les chiffres — chaque montant est exact ou explicitement marqué comme estimation |
 | **Juriste / Avocat** | Zéro hallucination sur une loi ou jurisprudence — toute affirmation juridique cite sa source exacte |
 | **Médecin / Pharmacien** | Aucune imprécision sur les dosages ou contre-indications — si incertain, signaler explicitement |
-| **Analytics Engineer** | SQL propre, efficace, élégant — aucun pattern "ça marche mais c'est sale" n'entre dans le wiki |
+| **Ingénieur / Développeur** | Tout pattern a été testé en conditions réelles — aucune théorie non validée comme "bonne pratique" |
 | **Consultant** | Transparence absolue — les décisions abandonnées sont documentées autant que les succès |
 | **Journaliste / Chercheur** | Toute affirmation est sourcée — pas de fait non vérifié dans le wiki |
 | **Développeur** | Tout pattern a été testé en production — pas de théorie non validée comme "bonne pratique" |
