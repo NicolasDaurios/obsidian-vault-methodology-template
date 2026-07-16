@@ -1,15 +1,16 @@
-# 🧠 Vault Methodology Template
+# Vault Methodology Template
 
-**Version**: 3.5
-**Auteur**: [Ton nom]
-**Créé le**: YYYY-MM-DD
-**Mis à jour le**: YYYY-MM-DD
-**Sources**: Vault v1 + Schéma agents isolés (v2) + Pillitteri/Second cerveau (v3) + agricidaniel/claude-obsidian (v3.1) + Carpati/oubli-stratégique (v3.2)
+**Version**: 4.0
+**Auteur**: Nicolas / Datashiru
+**Créé le**: 2026-04-24
+**Mis à jour le**: 2026-07-16
+**Inspiration**: Andrej Karpathy (mémoire LLM) + Pillitteri/Second cerveau + agricidaniel/claude-obsidian + Carpati/oubli-stratégique
+**Licence**: [CC BY-NC 4.0](LICENSE) — Nicolas / Datashiru.
 **Usage**: Adapte ce template à ton domaine. Commence par `context/ligne-rouge.md`.
 
 ---
 
-## 🎯 PRINCIPE FONDATEUR
+## PRINCIPE FONDATEUR
 
 **Rôle de l'IA** : Tu es l'Agent LLM Wiki. Tu es le programmeur, le wiki est ta base de code (Markdown), et Obsidian est ton IDE.
 
@@ -25,11 +26,11 @@ Source brute → Nettoyage → Ingestion → Wiki structuré → Query → Synth
      └────────────────────── Daily → Projects → Context ←───────────────────────┘
 ```
 
-> ⚡ **Acte fondateur** : avant de créer la moindre structure, répondre à cette question : *quelle est mon exigence irréductible pour ce vault ?* Écrire la réponse dans `context/ligne-rouge.md`. Tout le reste — l'ontologie, le scope, les conventions — en découle. Un vault sans ligne rouge est un système sans colonne vertébrale.
+> **Acte fondateur** : avant de créer la moindre structure, répondre à cette question : *quelle est mon exigence irréductible pour ce vault ?* Écrire la réponse dans `context/ligne-rouge.md`. Tout le reste — l'ontologie, le scope, les conventions — en découle. Un vault sans ligne rouge est un système sans colonne vertébrale.
 
 ---
 
-## 🏗️ ARCHITECTURE COMPLÈTE
+## ARCHITECTURE COMPLÈTE
 
 ```
 [RACINE DU VAULT]
@@ -60,13 +61,19 @@ Source brute → Nettoyage → Ingestion → Wiki structuré → Query → Synth
 │       └── log.md
 │
 ├── .claude/
-│   ├── commands/               → Slash commandes (ingest, query, lint, save, bonjour, challenge)
+│   ├── commands/               → Slash commandes (ingest, query, lint, save)
 │   ├── agents/                 → Définition des sous-agents spécialisés
 │   └── settings.local.json     → Config MCP locale
 │
+├── graphify-out/                → optionnel — graphe de connaissances queryable (voir plus bas)
+│   ├── graph.json
+│   ├── manifest.json
+│   └── cache/                   → à exclure du versioning (régénérable)
+│
 ├── cloud.md                    → Le "contrat" : règles, conventions (≤ 500 lignes)
 ├── index.md                    → Page d'entrée + navigation + stats du vault
-└── log.md                      → Historique global de toutes les actions des agents
+├── log.md                      → Historique global de toutes les actions des agents
+└── AGENTS.md                   → optionnel — protocole multi-agents (voir plus bas)
 ```
 
 ### Règles des couches
@@ -83,11 +90,11 @@ Source brute → Nettoyage → Ingestion → Wiki structuré → Query → Synth
 
 ---
 
-## 🤖 SOUS-AGENTS SPÉCIALISÉS
+## SOUS-AGENTS SPÉCIALISÉS
 
 Pour éviter la saturation du contexte et réduire les coûts (~40% de tokens économisés), chaque tâche est déléguée à un **sous-agent isolé**. Chaque agent reçoit uniquement le contexte nécessaire à sa tâche.
 
-> ⚠️ **Note pratique** : en l'absence de support natif des sous-agents dans Claude Code, chaque commande doit explicitement lister les fichiers à charger pour limiter la fenêtre de contexte.
+> **Note pratique** : en l'absence de support natif des sous-agents dans Claude Code, chaque commande doit explicitement lister les fichiers à charger pour limiter la fenêtre de contexte.
 
 ### Wiki Ingestor (`.claude/agents/ingestor.md`)
 - **Déclencheur** : `/ingest`
@@ -107,22 +114,40 @@ Pour éviter la saturation du contexte et réduire les coûts (~40% de tokens é
 - **Contexte reçu** : La question + pages wiki pertinentes uniquement (pas tout le vault)
 - **Output** : Réponse sourcée avec `[[liens]]` + offre de `/save`
 
-### Daily Agent (`.claude/agents/daily.md`) — optionnel
-- **Déclencheur** : `/bonjour`
-- **Rôle** : Charge le contexte du jour — tâches ouvertes, état du vault, priorités
-- **Contexte reçu** : Note du jour + note du jour précédent + `context/identity.md`
-- **Output** : Note journalière créée ou ouverte + résumé 3 priorités + `log.md` mis à jour
-- **Note** : la session peut aussi démarrer directement sans `/bonjour` — l'agent est un raccourci, pas une obligation
+---
 
-### Challenge Agent (`.claude/agents/challenge.md`)
-- **Déclencheur** : `/obsidian-challenge`
-- **Rôle** : Fouille le vault pour retrouver les échecs, revirements et patterns d'erreur sur un sujet
-- **Contexte reçu** : La décision à challenger + `wiki/lessons/` + `wiki/case-studies/` + `projects/*/log.md`
-- **Output** : Rapport de contre-arguments sourcés depuis le vault + entrée dans `log.md`
+## COUCHE GRAPHE DE CONNAISSANCES (GRAPHIFY) — optionnel
+
+Au-delà d'un certain volume, un agent qui doit relire l'intégralité du wiki pour répondre à une question devient lent et coûteux en tokens. [Graphify](https://github.com/Graphify-Labs/graphify) résout ça en indexant le vault dans un graphe queryable (`graphify-out/graph.json`) : nœuds (pages, concepts) + arêtes (relations explicites et sémantiques déduites) + communautés détectées.
+
+### Skill "Graph First Recall"
+
+Protocole en 3 étapes, à documenter dans un `AGENTS.md` à la racine (fichier neutre, lisible par n'importe quel agent — Claude Code, GPT, ou un agent tournant sur un autre serveur — pas seulement `CLAUDE.md` qui est spécifique à Claude Code) :
+
+1. **Consultation prioritaire du graphe** — lire `graphify-out/graph.json` avant de parcourir les fichiers Markdown.
+2. **Identification ciblée des fichiers** — repérer les chemins et métadonnées pertinents depuis le graphe, sans ouvrir chaque document.
+3. **Lecture finale sélective** — n'ouvrir le contenu complet d'un fichier que si c'est strictement nécessaire.
+
+**Pourquoi** : interroger le graphe coûte ~280 tokens contre ~20 000 tokens pour lire une quarantaine de fichiers en direct (jusqu'à ~70x moins cher). Et si plusieurs agents suivent le même protocole sur le même graphe, ils répondent depuis la même structure — cohérence multi-agents plutôt que chaque agent qui relit le vault à sa façon.
+
+### Multi-agents et distribution
+
+Si plusieurs agents doivent consulter le même vault depuis des environnements différents (ex: un agent local + un agent sur VPS), privilégier une synchro **Git en lecture seule** (l'agent distant fait un `git pull`, jamais de push direct) plutôt qu'exposer le vault sur le réseau — évite l'exposition réseau d'une machine perso et les conflits de merge multi-writer. Le vault reste géré par un seul point d'écriture (l'humain + son agent principal) ; un retour d'un agent distant est remonté et intégré manuellement, jamais mergé automatiquement.
+
+### Hygiène git (leçon apprise)
+
+`graphify-out/cache/` (cache d'extraction, régénérable) et les dossiers de backup datés créés avant chaque re-clustering ne doivent **jamais** être versionnés — ils gonflent l'historique git sans apporter de valeur à un agent consommateur, qui n'a besoin que de `graph.json`/`manifest.json`. À ajouter au `.gitignore` :
+
+```
+graphify-out/cache/
+graphify-out/20[0-9][0-9]-[0-9][0-9]-[0-9][0-9]/
+```
+
+Par défaut, Graphify indexe aussi les fichiers de config locaux (`.obsidian/*.json`, `.claude/settings.local.json`) s'ils ne sont pas déjà exclus par le `.gitignore` (Graphify s'appuie dessus pour ses propres exclusions) — ça crée des nœuds isolés qui polluent le graphe sans lien avec le reste. Les exclure du `.gitignore` avant le premier run évite d'avoir à les purger a posteriori.
 
 ---
 
-## 📂 GUIDE DES CATÉGORIES
+## GUIDE DES CATÉGORIES
 
 | Dossier | Contenu | Durée de vie |
 |---------|---------|--------------|
@@ -138,11 +163,11 @@ Pour éviter la saturation du contexte et réduire les coûts (~40% de tokens é
 | `daily/` | Notes quotidiennes opérationnelles | Temporaire |
 | `projects/` | Initiatives à durée limitée | Temporaire |
 
-> 💡 **Règle de granularité** : n'ajouter un nouveau sous-dossier que si **30+ notes** justifient la catégorie. Démarrer avec le minimum, étendre à la demande.
+> **Règle de granularité** : n'ajouter un nouveau sous-dossier que si **30+ notes** justifient la catégorie. Démarrer avec le minimum, étendre à la demande.
 
 ---
 
-## 🏷️ CONVENTIONS DE NOMMAGE
+## CONVENTIONS DE NOMMAGE
 
 ### Fichiers `wiki/`
 - **Format** : `kebab-case`, descriptif, sans abréviations, sans caractères spéciaux
@@ -183,20 +208,25 @@ Avant ingestion, s'assurer que le Markdown est **propre** :
 
 ---
 
-## 📝 STRUCTURE D'UNE PAGE WIKI
+## STRUCTURE D'UNE PAGE WIKI
 
 ```markdown
-# [Titre de la page]
-
-**Tags**: #tag1 #tag2 #tag3
-**Type**: Concept | Entity | Pattern | Case Study | Source | Synthesis | Tool | Lesson
-**Created**: YYYY-MM-DD
-**Last Updated**: YYYY-MM-DD
-**Status**: ✅ Actif | 🔄 En révision | 📌 À vérifier | ⚠️ Obsolète
-
+---
+tags: [tag1, tag2, tag3]
+type: Concept | Entity | Pattern | Case Study | Source | Synthesis | Tool | Lesson
+created: YYYY-MM-DD
+last_updated: YYYY-MM-DD
+status: actif | en-revision | a-verifier | obsolete
+related: ["[[page1]]", "[[page2]]"]
+part_of: "[[concept-parent]]"
+requires: ["[[prerequis]]"]
+used_in: ["[[case-study-ou-pattern]]"]
+source: "[[sources/nom-de-la-source]]"
 ---
 
-## 📌 TL;DR (5 lignes max)
+# [Titre de la page]
+
+## TL;DR (5 lignes max)
 Résumé exécutif — ce que cette page apporte en un coup d'œil.
 
 ---
@@ -211,7 +241,7 @@ Résumé exécutif — ce que cette page apporte en un coup d'œil.
 
 ---
 
-## ⚠️ Limites et contre-exemples
+## Limites et contre-exemples
 
 - Cas où ce pattern ne s'applique pas : [contexte]
 - Approche abandonnée et pourquoi : [raison]
@@ -219,63 +249,53 @@ Résumé exécutif — ce que cette page apporte en un coup d'œil.
 
 ---
 
-## 🔗 Relations
-
-- **Related**: [[page1]], [[page2]]
-- **Part of**: [[concept-parent]]
-- **Requires knowledge of**: [[prérequis]]
-- **Used in**: [[case-study-ou-pattern]]
-- **Source**: [[sources/nom-de-la-source]]
-
----
-
-## 📊 Metrics (si applicable)
+## Metrics (si applicable)
 
 - Gain de performance : X%
 - Temps d'exécution : Y sec
 - Score de complexité : Z/10
 ```
 
-> 💡 **Règle** : la section `## ⚠️ Limites et contre-exemples` est obligatoire pour les types Pattern et Lesson. Optionnelle pour Concept et Case Study. Un pattern sans contre-exemples est une vitrine, pas un outil de travail.
+> **Règle** : la section `## Limites et contre-exemples` est obligatoire pour les types Pattern et Lesson. Optionnelle pour Concept et Case Study. Un pattern sans contre-exemples est une vitrine, pas un outil de travail.
 
 ---
 
-## 📝 STRUCTURE D'UNE NOTE DAILY
+## STRUCTURE D'UNE NOTE DAILY
 
 ```markdown
-# Daily — YYYY-MM-DD
-
-**Status**: 🔄 En cours | ✅ Clôturée
-
+---
+status: en-cours | cloturee
 ---
 
-## 🎯 Objectifs du jour
+# Daily — YYYY-MM-DD
+
+## Objectifs du jour
 - [ ] Objectif 1
 - [ ] Objectif 2
 
 ---
 
-## 📋 Tâches ouvertes (report du jour précédent)
+## Tâches ouvertes (report du jour précédent)
 - [ ] Tâche reportée 1
 
 ---
 
-## 📝 Décisions prises
+## Décisions prises
 - Décision 1 : [contexte + choix]
 
 ---
 
-## 💡 Apprentissages du jour
+## Apprentissages du jour
 - Apprentissage 1
 
 ---
 
-## 🔁 À reporter demain
+## À reporter demain
 - [ ] Tâche non terminée
 
 ---
 
-## 🔗 Pages wiki mises à jour aujourd'hui
+## Pages wiki mises à jour aujourd'hui
 - [[page-mise-a-jour]]
 ```
 
@@ -287,36 +307,22 @@ Résumé exécutif — ce que cette page apporte en un coup d'œil.
 | ✅ Clôturée, aucun apprentissage transféré | 7 jours | Relire → transférer ou supprimer |
 | 🔄 En cours (session ouverte) | — | Conserver |
 
-> Une note daily clôturée depuis plus de 30 jours sans transfert wiki est du bruit, pas de la mémoire. Le `/purge` mensuel inclut le nettoyage de `daily/`.
+> Une note daily clôturée depuis plus de 30 jours sans transfert wiki est du bruit, pas de la mémoire.
 
 ---
 
-## 📋 STATUTS DE CONTENU
+## STATUTS DE CONTENU
 
-| Statut | Signification |
-|--------|--------------|
-| ✅ **Actif** | Page à jour, fiable, utilisable immédiatement |
-| 🔄 **En révision** | Contenu présent mais nécessite vérification |
-| 📌 **À vérifier** | Contradictoire, incomplet ou non testé |
-| ⚠️ **Obsolète** | Plus pertinent — à archiver ou supprimer |
-
----
-
-## ⚙️ SLASH COMMANDES
-
-### `/bonjour` _(optionnel)_
-**But** : Ouvrir la session de travail et charger le contexte du jour.
-
-**Processus** :
-1. Créer ou ouvrir `daily/YYYY-MM-DD.md`
-2. Récupérer les tâches ouvertes du jour précédent
-3. Consulter les objectifs long terme dans `context/identity.md`
-4. Résumer les 3 priorités de la journée
-5. Logger dans `log.md`
-
-> La session peut démarrer directement sans `/bonjour`. Cette commande est un raccourci de contexte, pas un prérequis.
+| Valeur YAML | Signification |
+|-------------|--------------|
+| `actif` | Page à jour, fiable, utilisable immédiatement |
+| `en-revision` | Contenu présent mais nécessite vérification |
+| `a-verifier` | Contradictoire, incomplet ou non testé |
+| `obsolete` | Plus pertinent — à archiver ou supprimer |
 
 ---
+
+## SLASH COMMANDES
 
 ### `/ingest [fichier]`
 **But** : Transformer une source brute (`raw/`) en pages wiki via le **Wiki Ingestor**.
@@ -375,8 +381,7 @@ Résumé exécutif — ce que cette page apporte en un coup d'œil.
    - ❌ **Sources non liées** : pages sans `[[sources/...]]`
 3. Produire un rapport par catégorie
 4. Proposer les corrections
-5. Si des pages `⚠️ Obsolète` ou stale ont été identifiées → proposer : *"Veux-tu lancer `/purge` pour traiter les candidats ?"*
-6. Logger dans `log.md`
+5. Logger dans `log.md`
 
 **Fréquence** :
 - Hebdomadaire : orphelins + liens cassés + tags hors liste
@@ -408,62 +413,7 @@ Résumé exécutif — ce que cette page apporte en un coup d'œil.
 
 ---
 
-### `/purge`
-**But** : Retirer activement le contenu obsolète pour éviter la dégradation du signal.
-
-> ⚠️ **Prérequis** : lancer `/lint` d'abord pour avoir un inventaire à jour des candidats.
-
-**Processus** :
-0. Appliquer la politique de rétention `daily/` :
-   - Notes `✅ Clôturées` depuis > 30 jours → supprimer
-   - Notes `✅ Clôturées` depuis > 7 jours sans transfert wiki visible → relire → transférer ou supprimer
-1. Lister toutes les pages avec statut `⚠️ Obsolète` ou `Last Updated` > 6 mois
-2. Pour chaque page candidate :
-   - Vérifier si elle est citée par d'autres pages (`[[backlinks]]`)
-   - Vérifier si elle a été utilisée dans une session `/query` récente (log)
-   - Décision : **Mettre à jour** | **Archiver** | **Supprimer**
-3. Archiver = déplacer vers `raw/YYYY-MM-DD_archived-[nom].md` (immuable, hors wiki)
-4. Supprimer = uniquement si aucun backlink et aucune valeur historique
-5. Mettre à jour `index.md` + logger dans `log.md`
-
-**Garde-fous** :
-- ❌ Ne jamais supprimer sans confirmation explicite
-- ❌ Ne pas purger une page avec des backlinks actifs — mettre à jour d'abord
-- ❌ Ne pas purger plus de 10% du vault en une session — risque de perte de cohérence
-- ❌ Toujours archiver avant de supprimer si la valeur historique est incertaine
-
-**Fréquence** : Au lint mensuel ou quand le vault dépasse 400 pages.
-
----
-
-### `/obsidian-challenge [décision]`
-**But** : Confronter une décision avec les échecs, revirements et patterns d'erreur déjà documentés dans le vault.
-
-**Processus** :
-1. Identifier le domaine de la décision (technique, client, process, organisationnel...)
-2. Chercher dans :
-   - `wiki/lessons/` → erreurs et gotchas documentés
-   - `wiki/case-studies/` → projets passés sur des sujets proches
-   - `projects/*/log.md` → décisions prises et leurs conséquences
-   - `daily/` → uniquement les 30 derniers jours (filtrer par date de fichier `YYYY-MM-DD`)
-3. Extraire : décisions similaires passées, erreurs commises, patterns d'échec récurrents
-4. Formuler des objections en citant **exactement** les pages du vault (`[[page]]`, verbatim si possible)
-5. Produire un rapport structuré :
-   - **Ce que le vault dit sur ce sujet**
-   - **Décisions similaires passées et leur résultat**
-   - **Risques identifiés depuis ton propre vécu**
-   - **Questions à te poser avant de décider**
-6. Logger dans `log.md`
-
-**Garde-fous** :
-- ❌ Ne pas inventer de contre-arguments — uniquement ce qui est dans le vault
-- ❌ Si le vault est vide sur le sujet → signaler explicitement "Pas d'historique sur ce sujet dans le vault"
-- ❌ Ne pas prendre position — présenter les faits du vault, pas une opinion
-- ❌ Ne pas modifier le vault pendant cette commande
-
----
-
-## 🔀 RÈGLE DE SPLIT VAULT
+## RÈGLE DE SPLIT VAULT
 
 Un vault = un domaine cohérent. Deux seuils distincts à surveiller :
 
@@ -484,7 +434,7 @@ Conserver dans **le même vault** si :
 - Les projets citent les mêmes patterns ou lessons
 - Les tags se recoupent naturellement
 
-> 💡 **Règle simple** : si tu dois expliquer pourquoi ces deux sujets sont dans le même vault, c'est qu'ils ne devraient pas l'être.
+> **Règle simple** : si tu dois expliquer pourquoi ces deux sujets sont dans le même vault, c'est qu'ils ne devraient pas l'être.
 
 ### Seuil technique — plafond de performance : 500 pages
 
@@ -502,7 +452,7 @@ Ce seuil est technique, pas thématique. Un vault parfaitement cohérent peut qu
 
 ---
 
-## 📅 LOG.MD — FORMAT STANDARD
+## LOG.MD — FORMAT STANDARD
 
 ```markdown
 ### [YYYY-MM-DD] — [AGENT] — [OPÉRATION] — [✅ | ❌ | ⚠️]
@@ -516,7 +466,7 @@ Ce seuil est technique, pas thématique. Un vault parfaitement cohérent peut qu
 
 ---
 
-## 🗺️ GUIDE DE DÉMARRAGE
+## GUIDE DE DÉMARRAGE
 
 ### Étape 0 — Définir ta ligne rouge (avant tout)
 
@@ -537,10 +487,9 @@ C'est le premier fichier que tu crées : `context/ligne-rouge.md`. Tout le reste
 | **Ingénieur / Développeur** | Tout pattern a été testé en conditions réelles — aucune théorie non validée comme "bonne pratique" |
 | **Consultant** | Transparence absolue — les décisions abandonnées sont documentées autant que les succès |
 | **Journaliste / Chercheur** | Toute affirmation est sourcée — pas de fait non vérifié dans le wiki |
-| **Développeur** | Tout pattern a été testé en production — pas de théorie non validée comme "bonne pratique" |
 | **Manager / Chef de projet** | Toute décision prise est tracée avec son contexte — pas de "on a décidé ça" sans le pourquoi |
 
-> 💡 Ta ligne rouge peut aussi être une combinaison : *"pas d'imprécision sur les chiffres + toutes les méthodes abandonnées documentées"*. L'essentiel : elle tient en 1-2 phrases et tu ne feras jamais de compromis dessus.
+> Ta ligne rouge peut aussi être une combinaison : *"pas d'imprécision sur les chiffres + toutes les méthodes abandonnées documentées"*. L'essentiel : elle tient en 1-2 phrases et tu ne feras jamais de compromis dessus.
 
 ---
 
@@ -556,7 +505,6 @@ Signal de succès : ratio de compression ≥ 5:1 (30 pages source → max 6 page
 ### Étape 3 — Cycle quotidien
 
 ```
-/bonjour (optionnel) → Charger le contexte du jour, tâches ouvertes
 [travail]            → Ingérer, requêter, capitaliser
 /save (si pattern)   → Cristalliser un apprentissage avant de fermer
 ```
@@ -566,13 +514,13 @@ Signal de succès : ratio de compression ≥ 5:1 (30 pages source → max 6 page
 | Fréquence | Action |
 |-----------|--------|
 | Hebdomadaire | `/lint` — orphelins, liens cassés |
-| Mensuelle | `/lint` complet + `/purge` si pages obsolètes |
+| Mensuelle | `/lint` complet |
 | À 400 pages | Alerte — lint de purge avant toute ingestion |
 | À 500 pages | Stop — splitter le vault ou archiver |
 
 ---
 
-## 🚀 CHECKLIST D'INITIALISATION
+## CHECKLIST D'INITIALISATION
 
 ### Socle obligatoire (tout vault)
 
@@ -581,14 +529,13 @@ Signal de succès : ratio de compression ≥ 5:1 (30 pages source → max 6 page
 - [ ] Créer `context/scope.md` — focus, sous-domaines, hors scope + limite 500 pages
 - [ ] Créer `context/identity.md` — qui tu es, ton domaine, ta cible
 - [ ] Créer `context/naming-conventions.md` — liste fermée des tags autorisés
-- [ ] Créer `.claude/commands/` avec les 5 commandes core (bonjour, ingest, query, lint, save)
-- [ ] Créer `.claude/agents/` avec les 4 agents core (ingestor, librarian, query, daily)
+- [ ] Créer `.claude/commands/` avec les 4 commandes core (ingest, query, lint, save)
+- [ ] Créer `.claude/agents/` avec les 3 agents core (ingestor, librarian, query)
 - [ ] Créer `cloud.md` ≤ 500 lignes en adaptant le domaine
 - [ ] Créer `index.md` avec navigation rapide et statistiques initiales
 - [ ] Créer `log.md` avec la première entrée "Vault initialisé"
 - [ ] Configurer `.claude/settings.local.json` (MCP, permissions)
 - [ ] Nettoyer la première source et la placer dans `raw/`
-- [ ] Lancer `/bonjour` pour la première session
 - [ ] Lancer `/ingest` pour la première ingestion
 
 ### Optionnel — selon l'usage
@@ -599,12 +546,11 @@ Signal de succès : ratio de compression ≥ 5:1 (30 pages source → max 6 page
 - [ ] `wiki/tools/` — si le vault couvre des configurations et setups techniques
 - [ ] `wiki/syntheses/` — si sessions `/query` génèrent des synthèses à conserver
 - [ ] `projects/` — si initiatives à durée limitée à tracker séparément du wiki
-- [ ] `/bonjour` + Daily Agent — si chargement de contexte quotidien souhaité
-- [ ] `/obsidian-challenge` + Challenge Agent — si vault avec historique d'échecs documentés
+- [ ] `graphify-out/` + `AGENTS.md` (skill Graph First Recall) — si couche graphe de connaissances queryable souhaitée, notamment pour un accès multi-agents
 
 ---
 
-## 🔑 NOTES UNIVERSELLES
+## NOTES UNIVERSELLES
 
 - **CLAUDE.md ≤ 500 lignes** : l'orchestrateur doit rester léger, le vrai contenu est dans les dossiers
 - **Toujours citer les sources** : chaque page wiki pointe vers sa `wiki/sources/`
@@ -620,42 +566,40 @@ Signal de succès : ratio de compression ≥ 5:1 (30 pages source → max 6 page
 
 ---
 
-## 📌 EXEMPLE DE CLOUD.MD INSTANCIÉ
+## EXEMPLE DE CLOUD.MD INSTANCIÉ
 
 ```markdown
-# 🧠 [Nom du domaine] Brain — Schema
+# [Nom du domaine] Brain — Schema
 
 **Version**: 1.0
 **Purpose**: Base de connaissances pour [domaine]
 **Owner**: [Ton nom]
 **Last Updated**: YYYY-MM-DD
 
-## 🎯 IDENTITÉ DU VAULT
+## IDENTITÉ DU VAULT
 
 **Focus**: [Domaine principal]
 **Sous-domaines**: [1], [2], [3]
 **Hors scope**: [Ce qu'on n'ingère pas]
 
-## 🤖 AGENTS
+## AGENTS
 
 - **Wiki Ingestor** → `.claude/agents/ingestor.md`
 - **Wiki Librarian** → `.claude/agents/librarian.md`
 - **Wiki Query** → `.claude/agents/query.md`
-- **Daily Agent** → `.claude/agents/daily.md`
-- **Challenge Agent** → `.claude/agents/challenge.md`
 
-## 📋 CONVENTIONS
+## CONVENTIONS
 
 Voir `context/naming-conventions.md` pour la liste complète des tags.
 
-## ⚙️ COMMANDES
+## COMMANDES
 
-/bonjour | /ingest | /query | /lint | /save | /obsidian-challenge
+/ingest | /query | /lint | /save
 
 [Renvoyer vers vault-methodology-template.md pour le détail complet]
 ```
 
 ---
 
-*Version 3.5 — CC BY-NC 4.0 — [Ton nom]*
-*Basé sur : Pillitteri/Second cerveau + agricidaniel/claude-obsidian + Carpati/oubli-stratégique*
+*Version 4.0 — CC BY-NC 4.0 — Nicolas / Datashiru.*
+*Inspiré de : Andrej Karpathy (mémoire LLM) + Pillitteri/Second cerveau + agricidaniel/claude-obsidian + Carpati/oubli-stratégique*
