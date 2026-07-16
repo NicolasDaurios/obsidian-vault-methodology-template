@@ -31,7 +31,7 @@ Chaque commande délègue à un sous-agent isolé qui ne reçoit que le contexte
 
 Au-delà d'un certain volume, relire l'intégralité du wiki à chaque question devient lent et coûteux. [Graphify](https://github.com/Graphify-Labs/graphify) indexe le vault dans un graphe (`graphify-out/graph.json`) : nœuds, relations explicites et déduites, communautés détectées.
 
-Le skill **"Graph First Recall"** — documenté dans un `AGENTS.md` à la racine, lisible par n'importe quel agent (pas seulement Claude Code) — impose un protocole en 3 étapes : consulter le graphe d'abord, identifier les fichiers pertinents, puis lire sélectivement le contenu complet uniquement si nécessaire. Coût : ~280 tokens pour interroger le graphe contre ~20 000 tokens pour lire une quarantaine de fichiers en direct.
+Le skill **"Read Graph"** — documenté dans un `AGENTS.md` à la racine, lisible par n'importe quel agent (pas seulement Claude Code) — impose un protocole en 3 étapes : consulter le graphe d'abord, identifier les fichiers pertinents, puis lire sélectivement le contenu complet uniquement si nécessaire. Cette technique diminue la consommation de tokens par rapport à une lecture directe de l'ensemble des fichiers.
 
 Cette couche permet aussi un accès **multi-agents** cohérent : plusieurs agents (Claude Code local, un agent sur VPS, etc.) peuvent consulter le même graphe et répondre depuis la même structure, via une synchro Git en lecture seule plutôt qu'une exposition réseau.
 
@@ -44,7 +44,7 @@ Cette couche permet aussi un accès **multi-agents** cohérent : plusieurs agent
 - **3 agents spécialisés** — chaque agent reçoit uniquement le contexte dont il a besoin
 - **Structure de page wiki** — frontmatter, TL;DR, limites et contre-exemples, relations
 - **Conventions de nommage** — listes de tags fermées, kebab-case, préfixes de date ISO
-- **Skill Graph First Recall** — protocole de lecture du graphe, agent-agnostique via `AGENTS.md`
+- **Skill Read Graph** — protocole de lecture du graphe, agent-agnostique via `AGENTS.md`
 - **Checklist d'initialisation** — pas à pas de zéro à la première ingestion
 - **Règles de split de vault** — quand créer un nouveau vault (seuil thématique + plafond technique de 500 pages)
 

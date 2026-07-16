@@ -19,7 +19,7 @@ The core idea: instead of using AI to answer questions from scratch each time, y
 - **Naming conventions** — closed tag lists, kebab-case, ISO date prefixes
 - **Initialization checklist** — step-by-step from zero to first ingestion
 - **Split vault rules** — when to create a new vault (thematic + 500-page hard cap)
-- **Knowledge graph layer (optional)** — Graphify integration + "Graph First Recall" skill for token-efficient, multi-agent queryable access
+- **Knowledge graph layer (optional)** — Graphify integration + "Read Graph" skill for token-efficient, multi-agent queryable access
 
 ---
 

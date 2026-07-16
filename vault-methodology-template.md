@@ -120,7 +120,7 @@ Pour éviter la saturation du contexte et réduire les coûts (~40% de tokens é
 
 Au-delà d'un certain volume, un agent qui doit relire l'intégralité du wiki pour répondre à une question devient lent et coûteux en tokens. [Graphify](https://github.com/Graphify-Labs/graphify) résout ça en indexant le vault dans un graphe queryable (`graphify-out/graph.json`) : nœuds (pages, concepts) + arêtes (relations explicites et sémantiques déduites) + communautés détectées.
 
-### Skill "Graph First Recall"
+### Skill "Read Graph"
 
 Protocole en 3 étapes, à documenter dans un `AGENTS.md` à la racine (fichier neutre, lisible par n'importe quel agent — Claude Code, GPT, ou un agent tournant sur un autre serveur — pas seulement `CLAUDE.md` qui est spécifique à Claude Code) :
 
@@ -128,7 +128,7 @@ Protocole en 3 étapes, à documenter dans un `AGENTS.md` à la racine (fichier 
 2. **Identification ciblée des fichiers** — repérer les chemins et métadonnées pertinents depuis le graphe, sans ouvrir chaque document.
 3. **Lecture finale sélective** — n'ouvrir le contenu complet d'un fichier que si c'est strictement nécessaire.
 
-**Pourquoi** : interroger le graphe coûte ~280 tokens contre ~20 000 tokens pour lire une quarantaine de fichiers en direct (jusqu'à ~70x moins cher). Et si plusieurs agents suivent le même protocole sur le même graphe, ils répondent depuis la même structure — cohérence multi-agents plutôt que chaque agent qui relit le vault à sa façon.
+**Pourquoi** : cette technique diminue la consommation de tokens par rapport à une lecture directe de l'ensemble des fichiers. Et si plusieurs agents suivent le même protocole sur le même graphe, ils répondent depuis la même structure — cohérence multi-agents plutôt que chaque agent qui relit le vault à sa façon.
 
 ### Multi-agents et distribution
 
@@ -546,7 +546,7 @@ Signal de succès : ratio de compression ≥ 5:1 (30 pages source → max 6 page
 - [ ] `wiki/tools/` — si le vault couvre des configurations et setups techniques
 - [ ] `wiki/syntheses/` — si sessions `/query` génèrent des synthèses à conserver
 - [ ] `projects/` — si initiatives à durée limitée à tracker séparément du wiki
-- [ ] `graphify-out/` + `AGENTS.md` (skill Graph First Recall) — si couche graphe de connaissances queryable souhaitée, notamment pour un accès multi-agents
+- [ ] `graphify-out/` + `AGENTS.md` (skill Read Graph) — si couche graphe de connaissances queryable souhaitée, notamment pour un accès multi-agents
 
 ---
 
