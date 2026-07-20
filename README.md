@@ -1,6 +1,10 @@
 # Obsidian Vault Methodology Template
 
+> **Structuring a second brain: going from chatting with an LLM to an agentic system for your organization or projects.**
+
 *[Version française](README.fr.md)*
+
+![Vault architecture — sources → agents → wiki (What · How · Why) → Graphify](docs/architecture-vault-en.svg)
 
 A structured methodology for building a **persistent knowledge base** in Obsidian, powered by Claude Code agents. Inspired by Andrej Karpathy's work on LLM memory.
 
@@ -16,10 +20,11 @@ The core idea: instead of using AI to answer questions from scratch each time, y
 - **4 slash commands** — `/ingest`, `/query`, `/lint`, `/save`
 - **3 specialized agents** — each agent receives only the context it needs (~40% token savings)
 - **Wiki page structure** — frontmatter, TL;DR, limits & counter-examples, relations
+- **Decision layer (ADR)** — recommended: captures the *why* behind choices (context, rejected options, consequences), with an `/adr` command
 - **Naming conventions** — closed tag lists, kebab-case, ISO date prefixes
 - **Initialization checklist** — step-by-step from zero to first ingestion
 - **Split vault rules** — when to create a new vault (thematic + 500-page hard cap)
-- **Knowledge graph layer (optional)** — Graphify integration + "Read Graph" skill for token-efficient, multi-agent queryable access
+- **Knowledge graph layer (recommended)** — Graphify integration + "Read Graph" skill for token-efficient, multi-agent queryable access
 
 ---
 

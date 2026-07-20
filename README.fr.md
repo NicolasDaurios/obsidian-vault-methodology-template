@@ -1,8 +1,12 @@
 # Obsidian Vault Methodology Template
 
+> **Structure d'un second cerveau : passer du chat avec un LLM à un système agentique pour votre organisation ou vos projets.**
+
 *[English version](README.md)*
 
-Une méthodologie structurée pour construire une **base de connaissances persistante** dans Obsidian, pilotée par des agents Claude Code, avec un graphe de connaissances Graphify en couche optionnelle. Inspiré des travaux d'Andrej Karpathy sur la mémoire des LLM.
+![Architecture du vault — sources → agents → wiki (Quoi · Comment · Pourquoi) → Graphify](docs/architecture-vault.svg)
+
+Une méthodologie structurée pour construire une **base de connaissances persistante** dans Obsidian, pilotée par des agents Claude Code, avec deux couches **recommandées** — Graphify (graphe de connaissances requêtable) et ADR (journal de décisions). Inspiré des travaux d'Andrej Karpathy sur la mémoire des LLM.
 
 L'idée centrale : au lieu de faire répondre l'IA depuis zéro à chaque conversation, on compile la connaissance de façon permanente dans un wiki. Chaque conversation enrichit la base — rien ne disparaît dans l'historique du chat.
 
@@ -27,7 +31,7 @@ Claude Code joue le rôle de programmeur : le wiki est sa base de code (Markdown
 
 Chaque commande délègue à un sous-agent isolé qui ne reçoit que le contexte nécessaire à sa tâche (~40% de tokens économisés par rapport à un agent unique qui charge tout le vault).
 
-### 3. Graphify — le graphe de connaissances queryable (optionnel)
+### 3. Graphify — le graphe de connaissances queryable (recommandé)
 
 Au-delà d'un certain volume, relire l'intégralité du wiki à chaque question devient lent et coûteux. [Graphify](https://github.com/Graphify-Labs/graphify) indexe le vault dans un graphe (`graphify-out/graph.json`) : nœuds, relations explicites et déduites, communautés détectées.
 
@@ -43,6 +47,7 @@ Cette couche permet aussi un accès **multi-agents** cohérent : plusieurs agent
 - **4 slash commandes** — `/ingest`, `/query`, `/lint`, `/save`
 - **3 agents spécialisés** — chaque agent reçoit uniquement le contexte dont il a besoin
 - **Structure de page wiki** — frontmatter, TL;DR, limites et contre-exemples, relations
+- **Couche décisions (ADR)** — recommandée : trace le *pourquoi* des choix (contexte, options rejetées, conséquences), avec la commande `/adr`
 - **Conventions de nommage** — listes de tags fermées, kebab-case, préfixes de date ISO
 - **Skill Read Graph** — protocole de lecture du graphe, agent-agnostique via `AGENTS.md`
 - **Checklist d'initialisation** — pas à pas de zéro à la première ingestion
@@ -56,7 +61,7 @@ Cette couche permet aussi un accès **multi-agents** cohérent : plusieurs agent
 2. Commencer par `context/ligne-rouge.md` — écrire ta contrainte irréductible pour ce vault
 3. Suivre la checklist d'initialisation en bas du template
 4. Adapter les exemples au domaine
-5. (Optionnel) Ajouter la couche Graphify une fois le vault suffisamment fourni — voir la section dédiée dans `vault-methodology-template.md`
+5. (Recommandé) Activer les couches ADR puis Graphify une fois le socle maîtrisé — voir « Étape 5 » et les sections dédiées dans `vault-methodology-template.md`
 
 > Le template est volontairement agnostique du domaine. Adapte-le à ton métier.
 

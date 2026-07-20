@@ -1,10 +1,10 @@
 # Vault Methodology Template
 
-**Version**: 4.0
+**Version**: 4.1
 **Auteur**: Nicolas / Datashiru
 **Créé le**: 2026-04-24
-**Mis à jour le**: 2026-07-16
-**Inspiration**: Andrej Karpathy (mémoire LLM) + Pillitteri/Second cerveau + agricidaniel/claude-obsidian + Carpati/oubli-stratégique
+**Mis à jour le**: 2026-07-20
+**Inspiration**: Andrej Karpathy (mémoire LLM) + Pillitteri/Second cerveau + agricidaniel/claude-obsidian + Carpati/oubli-stratégique + Joel Parker Henderson (ADR)
 **Licence**: [CC BY-NC 4.0](LICENSE) — Nicolas / Datashiru.
 **Usage**: Adapte ce template à ton domaine. Commence par `context/ligne-rouge.md`.
 
@@ -45,7 +45,8 @@ Source brute → Nettoyage → Ingestion → Wiki structuré → Query → Synth
 │   ├── sources/                → Métadonnées et résumés des fichiers présents dans raw/
 │   ├── syntheses/              → Synthèses complexes générées lors des sessions /query
 │   ├── tools/                  → Setup, configurations, intégrations d'outils
-│   └── lessons/                → Erreurs, gotchas, pièges à éviter
+│   ├── lessons/                → Erreurs, gotchas, pièges à éviter
+│   └── decisions/              → recommandé — journal de décisions (ADR) : le "pourquoi" (voir plus bas)
 │
 ├── context/                    → Identité du vault (qui tu es, ton domaine, tes conventions)
 │   ├── identity.md             → Ton positionnement, valeurs, mission, cible
@@ -65,7 +66,7 @@ Source brute → Nettoyage → Ingestion → Wiki structuré → Query → Synth
 │   ├── agents/                 → Définition des sous-agents spécialisés
 │   └── settings.local.json     → Config MCP locale
 │
-├── graphify-out/                → optionnel — graphe de connaissances queryable (voir plus bas)
+├── graphify-out/                → recommandé — graphe de connaissances queryable (voir plus bas)
 │   ├── graph.json
 │   ├── manifest.json
 │   └── cache/                   → à exclure du versioning (régénérable)
@@ -116,7 +117,7 @@ Pour éviter la saturation du contexte et réduire les coûts (~40% de tokens é
 
 ---
 
-## COUCHE GRAPHE DE CONNAISSANCES (GRAPHIFY) — optionnel
+## COUCHE GRAPHE DE CONNAISSANCES (GRAPHIFY) — recommandé
 
 Au-delà d'un certain volume, un agent qui doit relire l'intégralité du wiki pour répondre à une question devient lent et coûteux en tokens. [Graphify](https://github.com/Graphify-Labs/graphify) résout ça en indexant le vault dans un graphe queryable (`graphify-out/graph.json`) : nœuds (pages, concepts) + arêtes (relations explicites et sémantiques déduites) + communautés détectées.
 
@@ -134,6 +135,8 @@ Protocole en 3 étapes, à documenter dans un `AGENTS.md` à la racine (fichier 
 
 Si plusieurs agents doivent consulter le même vault depuis des environnements différents (ex: un agent local + un agent sur VPS), privilégier une synchro **Git en lecture seule** (l'agent distant fait un `git pull`, jamais de push direct) plutôt qu'exposer le vault sur le réseau — évite l'exposition réseau d'une machine perso et les conflits de merge multi-writer. Le vault reste géré par un seul point d'écriture (l'humain + son agent principal) ; un retour d'un agent distant est remonté et intégré manuellement, jamais mergé automatiquement.
 
+> **Mise en œuvre de référence (auteur)** : l'architecture est bâtie autour de **Claude Code** (agent principal, en écriture) + **Hermès** (harnais agentique) tournant sur un **VPS** en tâche de fond, le vault synchronisé en Git lecture seule. Ce n'est qu'une instanciation possible — la méthode, en Markdown pur, s'applique à de multiples situations : base de connaissances perso, wiki d'équipe ou d'organisation, documentation de projet, veille, travail client, recherche.
+
 ### Hygiène git (leçon apprise)
 
 `graphify-out/cache/` (cache d'extraction, régénérable) et les dossiers de backup datés créés avant chaque re-clustering ne doivent **jamais** être versionnés — ils gonflent l'historique git sans apporter de valeur à un agent consommateur, qui n'a besoin que de `graph.json`/`manifest.json`. À ajouter au `.gitignore` :
@@ -144,6 +147,105 @@ graphify-out/20[0-9][0-9]-[0-9][0-9]-[0-9][0-9]/
 ```
 
 Par défaut, Graphify indexe aussi les fichiers de config locaux (`.obsidian/*.json`, `.claude/settings.local.json`) s'ils ne sont pas déjà exclus par le `.gitignore` (Graphify s'appuie dessus pour ses propres exclusions) — ça crée des nœuds isolés qui polluent le graphe sans lien avec le reste. Les exclure du `.gitignore` avant le premier run évite d'avoir à les purger a posteriori.
+
+---
+
+## COUCHE DÉCISIONS (ADR) — recommandé
+
+Les décisions structurantes sont aujourd'hui capturées dans `daily/` (section « Décisions prises ») — mais `daily/` est purgé à 30 jours. Résultat : le **pourquoi** d'un choix est éphémère par construction, alors que c'est souvent l'information la plus coûteuse à reconstituer six mois plus tard. Un [ADR — Architecture Decision Record](https://github.com/joelparkerhenderson/architecture-decision-record) est une page qui fige ce pourquoi : le contexte, les options envisagées, le choix retenu et ses conséquences.
+
+Ce n'est pas réservé à l'ingénierie : un médecin trace *pourquoi ce protocole plutôt qu'un autre*, un juriste *pourquoi cette stratégie*, un consultant *pourquoi cette recommandation*. La mécanique est universelle ; seul le domaine change.
+
+### Frontière avec `lessons/` et « contre-exemples » (règle MECE)
+
+Le principe « une place claire et une seule » impose de distinguer nettement :
+
+| Type | Nature | Question à laquelle il répond |
+|------|--------|-------------------------------|
+| **Decision** (`wiki/decisions/`) | Choix **prospectif** entre alternatives | « On prend X plutôt que Y — voici pourquoi » |
+| **Lesson** (`wiki/lessons/`) | Constat **rétrospectif** | « X a cassé — voici le piège à éviter » |
+| « Limites et contre-exemples » | Section **au sein d'une page** existante | « Ce pattern ne s'applique pas quand… » |
+
+> **Test rapide** : y avait-il plusieurs routes possibles à trancher au moment T ? → **Decision**. Ai-je découvert un piège en avançant ? → **Lesson**.
+
+### Structure d'une page décision (ADR)
+
+Combinaison du template Nygard (le plus simple) et de la section « options » de MADR :
+
+```markdown
+---
+tags: [tag1, tag2]
+type: Decision
+created: YYYY-MM-DD
+decision_date: YYYY-MM-DD
+status: proposée | acceptée | remplacée | dépréciée
+supersedes: "[[decisions/ancienne-decision]]"     # si elle en remplace une
+superseded_by: "[[decisions/nouvelle-decision]]"  # si elle a été remplacée
+related: ["[[page-concernée]]"]
+source: "[[sources/nom-de-la-source]]"
+---
+
+# [Verbe + objet — ex. « Choisir Postgres plutôt que Mongo »]
+
+## Contexte
+La force qui a déclenché la décision — le problème, la contrainte, l'échéance.
+
+## Options envisagées
+- **Option A** — [description] → retenue / rejetée car [raison]
+- **Option B** — [description] → rejetée car [raison]
+- **Option C (statu quo)** → rejetée car [raison]
+
+## Décision
+Ce qu'on a choisi et le rationale — pourquoi cette route et pas les autres.
+
+## Conséquences
+Ce qu'on accepte en échange — bénéfices ET coûts. Les compromis assumés.
+```
+
+> **Règle** : la section `## Options envisagées` est **obligatoire**. Un ADR sans alternative rejetée n'est pas une décision, c'est une annonce — il perd tout son intérêt (le « *plutôt qu'un autre* »).
+
+### Statut et mutabilité
+
+Les décisions ont leur **propre vocabulaire de statut**, distinct des statuts wiki :
+
+| Statut | Signification |
+|--------|--------------|
+| `proposée` | En réflexion, pas encore actée |
+| `acceptée` | Décision en vigueur |
+| `remplacée` | Révisée par un ADR plus récent (`superseded_by`) |
+| `dépréciée` | Plus pertinente, sans remplaçante |
+
+Deux façons de faire évoluer une décision :
+
+- **Revirement** (on change de choix) → créer une **nouvelle** page qui `supersedes` l'ancienne, et passer l'ancienne en `remplacée`. On garde la trace du *pourquoi on a changé d'avis* — c'est le cœur de la mémoire.
+- **Clarification** (on précise sans changer le choix) → **annotation datée** dans la page existante. Pas besoin de superséder.
+
+> Ne jamais réécrire silencieusement une décision `acceptée` pour la retourner : sans trace du revirement, l'amnésie revient par la fenêtre. (Le repo de référence assume cette mutabilité pragmatique — supersession pour un vrai revirement, annotation datée pour le reste ; pas d'immuabilité stricte.)
+
+### Nommage
+
+Comme le repo de référence : **descriptif et impératif**, kebab-case, sans numéro (`[[choisir-postgres]]` se lit, `[[adr-0007]]` non) :
+
+- `wiki/decisions/choisir-postgres-plutot-que-mongo.md`
+- `wiki/decisions/abandonner-le-cache-redis.md`
+
+Préfixe numérique (`0001-`) uniquement si tu tiens à un ordre chronologique visible — optionnel.
+
+### Le flux `daily → ADR` (le mécanisme qui fait vivre le module)
+
+Un ADR ne s'écrit pas « en plus » du travail — il **gradue** depuis le quotidien :
+
+```
+Décision notée dans daily/ (« Décisions prises »)
+        │
+        ▼   si elle est structurante ET durable
+Page wiki/decisions/ créée avant la purge des 30 jours
+        │
+        ▼
+Indexée par Graphify → requêtable (« pourquoi a-t-on choisi X ? »)
+```
+
+Sans ce réflexe de graduation, le module est mort : les décisions restent dans `daily/` et disparaissent. **Règle : à la clôture d'une daily, toute décision qui survivra à ce mois-ci part en `wiki/decisions/`.**
 
 ---
 
@@ -159,6 +261,7 @@ Par défaut, Graphify indexe aussi les fichiers de config locaux (`.obsidian/*.j
 | `wiki/syntheses/` | Synthèses issues de sessions `/query` | Permanente |
 | `wiki/tools/` | Setup, configurations, intégrations | Permanente |
 | `wiki/lessons/` | Erreurs, gotchas, pièges à éviter | Permanente |
+| `wiki/decisions/` | Décisions tracées (ADR) : choix + options rejetées + conséquences | Permanente |
 | `context/` | Identité, conventions, scope du vault | Semi-permanente |
 | `daily/` | Notes quotidiennes opérationnelles | Temporaire |
 | `projects/` | Initiatives à durée limitée | Temporaire |
@@ -177,6 +280,7 @@ Par défaut, Graphify indexe aussi les fichiers de config locaux (`.obsidian/*.j
   - `wiki/patterns/template-prise-de-decision.md`
   - `wiki/sources/nom-du-livre-ou-article.md`
   - `wiki/syntheses/synthese-sur-sujet-cle.md`
+  - `wiki/decisions/choisir-x-plutot-que-y.md`
 
 ### Fichiers `raw/`
 - **Format** : `YYYY-MM-DD_source-description.md` — date ISO + tiret bas + description kebab-case
@@ -213,7 +317,7 @@ Avant ingestion, s'assurer que le Markdown est **propre** :
 ```markdown
 ---
 tags: [tag1, tag2, tag3]
-type: Concept | Entity | Pattern | Case Study | Source | Synthesis | Tool | Lesson
+type: Concept | Entity | Pattern | Case Study | Source | Synthesis | Tool | Lesson | Decision
 created: YYYY-MM-DD
 last_updated: YYYY-MM-DD
 status: actif | en-revision | a-verifier | obsolete
@@ -413,6 +517,25 @@ status: en-cours | cloturee
 
 ---
 
+### `/adr [titre]` — optionnel (couche décisions)
+
+**But** : Capturer une décision au format ADR dans `wiki/decisions/`.
+
+**Processus** :
+1. Récupérer la décision (depuis la daily en cours ou la question posée)
+2. Reconstituer : contexte, options envisagées (dont celles rejetées), choix, conséquences
+3. Créer `wiki/decisions/[verbe-objet].md` avec le frontmatter décision complet
+4. Si elle en remplace une autre → renseigner `supersedes` / `superseded_by` et passer l'ancienne en `remplacée`
+5. Lier aux pages concernées (le tool, concept ou pattern que la décision justifie)
+6. Logger dans `log.md`
+
+**Garde-fous** :
+- ❌ Refuser de créer un ADR sans au moins une option rejetée — sinon ce n'est pas une décision
+- ❌ Ne pas réécrire une décision `acceptée` pour la retourner → superséder à la place
+- ❌ Distinguer Decision (choix prospectif) de Lesson (constat rétrospectif)
+
+---
+
 ## RÈGLE DE SPLIT VAULT
 
 Un vault = un domaine cohérent. Deux seuils distincts à surveiller :
@@ -518,6 +641,17 @@ Signal de succès : ratio de compression ≥ 5:1 (30 pages source → max 6 page
 | À 400 pages | Alerte — lint de purge avant toute ingestion |
 | À 500 pages | Stop — splitter le vault ou archiver |
 
+### Étape 5 — Activer les couches recommandées (passer à la puissance supérieure)
+
+Une fois la boucle de base maîtrisée et le vault suffisamment fourni, activer les deux couches **recommandées** — dans cet ordre :
+
+1. **ADR** (`wiki/decisions/` + `/adr`) — commence à figer le *pourquoi* de tes décisions. Le plus léger à adopter : une décision structurante qui gradue depuis tes daily, de temps en temps.
+2. **Graphify** (`graphify-out/` + skill Read Graph) — quand le volume rend la relecture coûteuse, indexe le vault en graphe requêtable.
+
+Ensemble, elles décuplent la puissance : le graphe ne répond plus seulement « qu'est-ce que je sais » mais « **pourquoi ai-je décidé ça** », et cette structure partagée ouvre l'**interopérabilité multi-agents** — plusieurs agents (local, distant) qui raisonnent depuis le même graphe plutôt que chacun sa relecture.
+
+> **Piste d'évolution** : au-delà de la consultation, faire tourner le vault dans un **harnais agentique** — un runtime toujours actif (souvent sur un petit VPS) qui exécute les commandes, entretient le graphe et capitalise en continu, l'humain arbitrant plutôt qu'exécutant. C'est le passage du *chat* au *système agentique*. Des harnais comme [Hermès](https://composio.dev/content/openclaw-vs-hermes-agent) vont dans ce sens.
+
 ---
 
 ## CHECKLIST D'INITIALISATION
@@ -538,6 +672,13 @@ Signal de succès : ratio de compression ≥ 5:1 (30 pages source → max 6 page
 - [ ] Nettoyer la première source et la placer dans `raw/`
 - [ ] Lancer `/ingest` pour la première ingestion
 
+### Recommandé — à activer une fois le socle maîtrisé (décuple la puissance et l'interopérabilité)
+
+Ces deux couches ne sont pas des gadgets : une fois la boucle de base (`/ingest`, `/query`, `/lint`, `/save`) devenue un réflexe, elles font passer le vault de « base de notes » à « second cerveau requêtable et traçable ». À activer quand tu es à l'aise, pas avant.
+
+- [ ] `wiki/decisions/` + commande `/adr` — couche **ADR** (le « pourquoi ») : trace le contexte des décisions avant qu'il ne disparaisse dans la purge des daily
+- [ ] `graphify-out/` + `AGENTS.md` (skill Read Graph) — couche **Graphify** (le cerveau requêtable) : accès token-efficient et cohérence multi-agents
+
 ### Optionnel — selon l'usage
 
 - [ ] `wiki/case-studies/` — si retours d'expérience terrain (consultant, praticien)
@@ -546,7 +687,6 @@ Signal de succès : ratio de compression ≥ 5:1 (30 pages source → max 6 page
 - [ ] `wiki/tools/` — si le vault couvre des configurations et setups techniques
 - [ ] `wiki/syntheses/` — si sessions `/query` génèrent des synthèses à conserver
 - [ ] `projects/` — si initiatives à durée limitée à tracker séparément du wiki
-- [ ] `graphify-out/` + `AGENTS.md` (skill Read Graph) — si couche graphe de connaissances queryable souhaitée, notamment pour un accès multi-agents
 
 ---
 
@@ -601,5 +741,5 @@ Voir `context/naming-conventions.md` pour la liste complète des tags.
 
 ---
 
-*Version 4.0 — CC BY-NC 4.0 — Nicolas / Datashiru.*
-*Inspiré de : Andrej Karpathy (mémoire LLM) + Pillitteri/Second cerveau + agricidaniel/claude-obsidian + Carpati/oubli-stratégique*
+*Version 4.1 — CC BY-NC 4.0 — Nicolas / Datashiru.*
+*Inspiré de : Andrej Karpathy (mémoire LLM) + Pillitteri/Second cerveau + agricidaniel/claude-obsidian + Carpati/oubli-stratégique + Joel Parker Henderson (ADR)*

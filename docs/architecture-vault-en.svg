@@ -1,0 +1,76 @@
+<svg viewBox="0 0 1280 680" xmlns="http://www.w3.org/2000/svg" font-family="Arial, 'Helvetica Neue', sans-serif">
+  <defs>
+    <filter id="sh" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="5" stdDeviation="12" flood-color="#000000" flood-opacity="0.08"/>
+    </filter>
+  </defs>
+
+  <rect width="1280" height="680" fill="#EBF0E2"/>
+
+  <!-- chip -->
+  <rect x="60" y="42" width="200" height="44" rx="22" fill="#DCE5CE"/>
+  <circle cx="86" cy="64" r="6" fill="#647E5B"/>
+  <text x="104" y="71" font-size="20" font-weight="700" fill="#647E5B" letter-spacing="1.5">THE METHOD</text>
+
+  <!-- title -->
+  <text x="58" y="150" font-size="50" font-weight="800" letter-spacing="-1"><tspan fill="#191512">STRUCTURING A </tspan><tspan fill="#647E5B">SECOND BRAIN</tspan></text>
+  <text x="60" y="190" font-size="21" fill="#6E7A66">From chatting with an LLM to an agentic system — for your organization or projects</text>
+
+  <!-- ===== PIPELINE ===== -->
+
+  <!-- raw -->
+  <rect x="60" y="330" width="175" height="140" rx="18" fill="#FFFFFF" filter="url(#sh)"/>
+  <text x="90" y="374" font-size="19" font-weight="700" fill="#93998A" font-family="'Courier New', monospace">raw/</text>
+  <text x="90" y="410" font-size="24" font-weight="800" fill="#191512">Sources</text>
+  <text x="90" y="438" font-size="18" fill="#8C9082">raw · immutable</text>
+
+  <!-- arrow 1 -->
+  <line x1="242" y1="400" x2="294" y2="400" stroke="#647E5B" stroke-width="3"/>
+  <polygon points="294,392 294,408 307,400" fill="#647E5B"/>
+
+  <!-- agents -->
+  <rect x="300" y="330" width="250" height="140" rx="18" fill="#FFFFFF" filter="url(#sh)"/>
+  <text x="330" y="374" font-size="19" font-weight="700" fill="#93998A" font-family="'Courier New', monospace">Claude Code</text>
+  <text x="330" y="406" font-size="24" font-weight="800" fill="#191512">Agents</text>
+  <text x="330" y="434" font-size="15" fill="#8C9082" font-family="'Courier New', monospace">/ingest · /query</text>
+  <text x="330" y="454" font-size="15" fill="#8C9082" font-family="'Courier New', monospace">/lint · /save</text>
+
+  <!-- arrow 2 -->
+  <line x1="557" y1="400" x2="594" y2="400" stroke="#647E5B" stroke-width="3"/>
+  <polygon points="594,392 594,408 607,400" fill="#647E5B"/>
+
+  <!-- wiki -->
+  <rect x="600" y="270" width="350" height="260" rx="18" fill="#FFFFFF" filter="url(#sh)"/>
+  <text x="626" y="308" font-size="18" font-weight="700" fill="#93998A" font-family="'Courier New', monospace">wiki/ <tspan fill="#B4B7A9">— permanent knowledge</tspan></text>
+
+  <rect x="616" y="322" width="318" height="56" rx="12" fill="#ECEFE5"/>
+  <text x="634" y="356" font-size="18"><tspan font-weight="800" fill="#5F6A55">THE WHAT</tspan><tspan fill="#8C9082"> — concepts · entities</tspan></text>
+
+  <rect x="616" y="386" width="318" height="56" rx="12" fill="#ECEFE5"/>
+  <text x="634" y="420" font-size="18"><tspan font-weight="800" fill="#5F6A55">THE HOW</tspan><tspan fill="#8C9082"> — patterns · tools</tspan></text>
+
+  <rect x="616" y="450" width="318" height="64" rx="12" fill="#DEE8CD" stroke="#647E5B" stroke-width="1.8"/>
+  <text x="634" y="488" font-size="18"><tspan font-weight="800" fill="#647E5B">THE WHY</tspan><tspan fill="#74836A"> — decisions (ADR)</tspan></text>
+
+  <!-- arrow 3 -->
+  <line x1="957" y1="400" x2="1004" y2="400" stroke="#647E5B" stroke-width="3"/>
+  <polygon points="1004,392 1004,408 1017,400" fill="#647E5B"/>
+
+  <!-- graphify -->
+  <rect x="1010" y="330" width="210" height="140" rx="18" fill="#FFFFFF" stroke="#647E5B" stroke-width="2.5" filter="url(#sh)"/>
+  <text x="1035" y="372" font-size="18" font-weight="700" fill="#647E5B" font-family="'Courier New', monospace">graphify-out/</text>
+  <text x="1035" y="406" font-size="24" font-weight="800" fill="#191512">Graphify</text>
+  <text x="1035" y="432" font-size="15" fill="#647E5B">queryable graph</text>
+  <text x="1035" y="451" font-size="15" fill="#647E5B">layer</text>
+
+  <!-- feedback loop -->
+  <path d="M1114,472 C1114,600 900,612 786,540" fill="none" stroke="#647E5B" stroke-width="2.5"/>
+  <polygon points="778,550 794,545 785,531" fill="#647E5B"/>
+  <text x="948" y="602" font-size="18" font-style="italic" fill="#6E7A66" text-anchor="middle">every query enriches the wiki</text>
+
+  <!-- legend -->
+  <rect x="60" y="628" width="18" height="18" rx="4" fill="#647E5B"/>
+  <text x="88" y="643" font-size="18" fill="#6E7A66"><tspan font-weight="700" fill="#191512">Recommended</tspan> layers — ADR (the why) + Graphify (the queryable graph layer).</text>
+
+  <text x="1220" y="643" font-size="15" fill="#A7AE9C" text-anchor="end" font-family="'Courier New', monospace">Datashiru · CC BY-NC 4.0</text>
+</svg>
