@@ -1,5 +1,7 @@
 # Vault Methodology Template
 
+*[English version](vault-methodology-template.en.md)*
+
 **Version**: 4.1
 **Auteur**: Nicolas / Datashiru
 **Créé le**: 2026-04-24

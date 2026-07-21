@@ -30,7 +30,7 @@ The core idea: instead of using AI to answer questions from scratch each time, y
 
 ## How to use
 
-1. Copy `vault-methodology-template.md` into your Obsidian vault root
+1. Copy `vault-methodology-template.en.md` into your Obsidian vault root (or `vault-methodology-template.md` for the French original)
 2. Start with `context/ligne-rouge.md` — write your non-negotiable constraint for this vault
 3. Follow the initialization checklist at the bottom of the template
 4. Adapt the domain examples to your field

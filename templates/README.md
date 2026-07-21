@@ -1,5 +1,7 @@
 # Pack templates — prêt à l'emploi
 
+*[English version](README.en.md)*
+
 Templates à copier dans ton vault Obsidian. Extrait du [Vault Methodology Template](../vault-methodology-template.md) (v4.1).
 
 ## Contenu
